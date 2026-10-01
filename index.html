@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Data Science Society Booth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: full-screen TV loop. Live regression canvas behind rotating scenes; progress ticks along the bottom. */
+:root{
+  --ink:#0d1b2a;      /* deep plot-paper navy */
+  --panel:#13263a;
+  --grid:#1e3550;
+  --paper:#eef3f7;
+  --muted:#8fa6bd;
+  --coral:#ff7a59;    /* fitted line / accent */
+  --teal:#4fd1c5;     /* data points */
+  --gold:#ffcf5c;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--ink);color:var(--paper);font-family:var(--display);overflow:hidden;cursor:default}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.veil{position:fixed;inset:0;z-index:1;background:radial-gradient(ellipse at 30% 50%,rgba(13,27,42,.55),rgba(13,27,42,.88) 70%)}
+.stage{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;padding-inline:max(16px,5vw);padding-block:4vh 3vh;box-sizing:border-box}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;font-family:var(--mono);font-size:clamp(12px,1.3vw,22px);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+header b{color:var(--paper);font-weight:600}
+.dot{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--coral);margin-right:.5em;animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.3}}
+main{flex:1;position:relative;min-height:0}
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;opacity:0;transform:translateY(2vh);transition:opacity .7s ease,transform .7s ease;pointer-events:none}
+.scene.on{opacity:1;transform:none;pointer-events:auto}
+.eyebrow{font-family:var(--mono);color:var(--teal);font-size:clamp(14px,1.6vw,28px);letter-spacing:.12em;text-transform:uppercase;margin-bottom:2vh}
+h1{font-size:clamp(44px,9vw,180px);line-height:.92;font-weight:800;margin:0;letter-spacing:-.03em;text-wrap:balance}
+h1 .hl{color:var(--coral)}
+h2{font-size:clamp(34px,5.4vw,104px);line-height:1;font-weight:800;margin:0 0 4vh;letter-spacing:-.02em;text-wrap:balance}
+.lede{font-size:clamp(20px,2.6vw,48px);color:var(--paper);opacity:.9;max-width:28ch;margin-top:3vh;line-height:1.2;font-weight:400}
+.lede code{font-family:var(--mono);color:var(--gold);font-size:.85em}
+.grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3vh 4vw}
+.item{border-top:3px solid var(--grid);padding-top:2vh}
+.item .k{font-family:var(--mono);color:var(--coral);font-size:clamp(13px,1.3vw,24px)}
+.item h3{font-size:clamp(22px,3vw,56px);margin:.6vh 0;font-weight:600;line-height:1.05}
+.item p{margin:0;color:var(--muted);font-size:clamp(15px,1.7vw,32px);line-height:1.3}
+.big{font-family:var(--mono);font-weight:600;font-size:clamp(64px,14vw,280px);color:var(--teal);line-height:.9;font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+.big small{font-size:.3em;color:var(--muted);letter-spacing:0;margin-left:.3em}
+.pipe{display:flex;flex-wrap:wrap;align-items:center;gap:1.2vw;margin-top:4vh;font-family:var(--mono);font-size:clamp(14px,1.8vw,34px)}
+.pipe span{background:var(--panel);border:1px solid var(--grid);padding:.5em .9em;border-radius:6px}
+.pipe i{color:var(--coral);font-style:normal}
+.tags{display:flex;flex-wrap:wrap;gap:1.2vw;margin-top:4vh}
+.tags span{font-family:var(--mono);font-size:clamp(16px,2vw,38px);padding:.4em .8em;border-radius:999px;border:2px solid var(--teal);color:var(--teal)}
+.q{font-size:clamp(28px,4.4vw,86px);font-weight:600;line-height:1.1;max-width:22ch;text-wrap:balance;margin:0}
+.ans{margin-top:5vh;font-family:var(--mono);font-size:clamp(18px,2.4vw,46px);color:var(--muted);min-height:3em}
+.ans .reveal{color:var(--gold);font-weight:600;font-size:1.6em;display:block;margin-top:.3em}
+.timer{display:inline-block;height:6px;width:min(40vw,600px);max-width:100%;background:var(--grid);border-radius:3px;overflow:hidden;vertical-align:middle}
+.timer i{display:block;height:100%;width:0;background:var(--gold)}
+.candy{display:inline-block;margin-top:3vh;font-family:var(--mono);font-size:clamp(14px,1.7vw,32px);color:var(--ink);background:var(--gold);padding:.4em .9em;border-radius:6px;font-weight:600}
+.join{display:grid;grid-template-columns:minmax(0,1.4fr) auto;gap:5vw;align-items:center}
+.facts{display:grid;gap:2.5vh}
+.fact .k{font-family:var(--mono);color:var(--teal);font-size:clamp(13px,1.4vw,26px);letter-spacing:.1em;text-transform:uppercase}
+.fact .v{font-size:clamp(24px,3.4vw,64px);font-weight:600;line-height:1.1;outline:none;border-radius:6px;padding:.05em .15em;margin-left:-.15em}
+[contenteditable]:hover{background:rgba(255,255,255,.05)}
+[contenteditable]:focus{background:var(--panel);box-shadow:0 0 0 2px var(--coral)}
+.showup{background:var(--coral);color:var(--ink);padding:clamp(18px,3vw,56px);border-radius:14px;max-width:16ch;transform:rotate(-2deg)}
+.showup .k{font-family:var(--mono);font-size:clamp(12px,1.3vw,24px);letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.showup p{margin:.15em 0 .3em;font-size:clamp(34px,5.5vw,108px);font-weight:800;line-height:.95;letter-spacing:-.02em}
+.showup span{font-size:clamp(16px,2vw,38px);line-height:1.2;display:block}
+footer{display:flex;gap:8px;align-items:center}
+footer button{flex:1;height:6px;border:0;padding:0;border-radius:3px;background:var(--grid);cursor:pointer;position:relative;overflow:hidden}
+footer button i{position:absolute;inset:0;width:0;background:var(--coral)}
+footer button:focus-visible{outline:2px solid var(--paper);outline-offset:3px}
+.hint{position:fixed;right:16px;bottom:calc(3vh + 14px);z-index:3;font-family:var(--mono);font-size:12px;color:var(--muted);opacity:0;transition:opacity .4s}
+body.mouse .hint{opacity:.8}
+@media (max-width:700px){.grid4,.join{grid-template-columns:1fr}body{overflow:auto}}
+@media (prefers-reduced-motion:reduce){.scene{transition:none}.dot{animation:none}}
+</style>
+<style>body{margin:0}*{box-sizing:border-box}</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="veil"></div>
+<div class="stage">
+  <header>
+    <div><span class="dot"></span><b>BYU–Idaho</b> · Data Science Society</div>
+    <div id="clock">n = 0 · r² = 0.00</div>
+  </header>
+
+  <main>
+    <section class="scene on" data-dur="11">
+      <div class="eyebrow">// welcome to the booth</div>
+      <h1>Data Science<br><span class="hl">Society</span></h1>
+      <p class="lede">We take messy data and turn it into answers. Come build things with us.</p>
+    </section>
+
+    <section class="scene" data-dur="13">
+      <div class="eyebrow">// what we do</div>
+      <h2>Learn it by building it.</h2>
+      <div class="grid4">
+        <div class="item"><div class="k">workshops</div><h3>Hands-on skills</h3><p>R, Python, SQL, and the tools employers actually ask for.</p></div>
+        <div class="item"><div class="k">projects</div><h3>Real data, real teams</h3><p>Work on projects you can put on a résumé and GitHub.</p></div>
+        <div class="item"><div class="k">mentoring</div><h3>Upperclassmen help</h3><p>Stuck on code or stats? Someone here has been there.</p></div>
+        <div class="item"><div class="k">people</div><h3>Your crowd</h3><p>Meet other students who think spreadsheets are fun.</p></div>
+      </div>
+    </section>
+
+    <section class="scene" data-dur="13">
+      <div class="eyebrow">// project spotlight</div>
+      <div class="big" id="rows">0<small>rows</small></div>
+      <p class="lede">of college football booster data, turned into an interactive dashboard by a team of <b>freshmen</b>.</p>
+      <div class="pipe"><span>parquet</span><i>→</i><span>R + tidyverse</span><i>→</i><span>Shiny dashboard</span><i>→</i><span>insights</span></div>
+    </section>
+
+    <section class="scene" data-dur="11">
+      <div class="eyebrow">// no experience required</div>
+      <h2>Never written code?<br><span style="color:var(--teal)">Perfect.</span></h2>
+      <p class="lede">Any major is welcome. If you're curious about data, you belong here.</p>
+      <div class="tags"><span>CS</span><span>Stats</span><span>Business</span><span>Econ</span><span>Bio</span><span>Undeclared</span></div>
+    </section>
+
+    <section class="scene quiz" data-dur="14">
+      <div class="eyebrow">// data puzzle · answer right, grab extra candy</div>
+      <p class="q" id="q"></p>
+      <div class="ans"><span class="timer"><i id="qt"></i></span><span class="reveal" id="a"></span></div>
+    </section>
+
+    <section class="scene" data-dur="16">
+      <div class="eyebrow">// join us</div>
+      <div class="join">
+        <div class="facts">
+          <h2 style="margin:0">Come to a meeting.</h2>
+          <div class="fact"><div class="k">When</div><div class="v" contenteditable="true" spellcheck="false" id="f-when">Wednesday nights · 6:00 PM</div></div>
+          <div class="fact"><div class="k">Where</div><div class="v" contenteditable="true" spellcheck="false" id="f-where">STC 361 &amp; 367</div></div>
+          <div class="fact"><div class="k">Talk to</div><div class="v" contenteditable="true" spellcheck="false" id="f-who">Logan Lay · President</div></div>
+        </div>
+        <div class="showup">
+          <div class="k">No sign-up needed</div>
+          <p>Just show up.</p>
+          <span>We'll add you to our <b>Slack</b> at your first meeting.</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="ticks"></footer>
+</div>
+<div class="hint">← → switch · space pause · F fullscreen · click text on last slide to edit</div>
+
+<script>
+/* ---------- live regression background ---------- */
+const cv=document.getElementById('bg'),cx=cv.getContext('2d');
+let W,H,pts=[];
+function size(){const d=devicePixelRatio||1;W=cv.width=innerWidth*d;H=cv.height=innerHeight*d;}
+addEventListener('resize',size);size();
+const slope=-0.45+Math.random()*0.2, icpt=0.72;
+function addPt(){const x=Math.random();const y=icpt+slope*x+(Math.random()+Math.random()+Math.random()-1.5)*0.18;pts.push({x,y,t:0});if(pts.length>140)pts.shift();}
+for(let i=0;i<60;i++){addPt();pts[i].t=1}
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let lastAdd=0;
+function fit(){const n=pts.length;let sx=0,sy=0,sxx=0,sxy=0,syy=0;for(const p of pts){sx+=p.x;sy+=p.y;sxx+=p.x*p.x;sxy+=p.x*p.y;syy+=p.y*p.y}
+  const b=(n*sxy-sx*sy)/(n*sxx-sx*sx),a=(sy-b*sx)/n;const r=(n*sxy-sx*sy)/Math.sqrt((n*sxx-sx*sx)*(n*syy-sy*sy));return{a,b,r2:r*r,n};}
+function draw(ts){
+  if(!reduce&&ts-lastAdd>450){addPt();lastAdd=ts}
+  cx.clearRect(0,0,W,H);
+  const d=devicePixelRatio||1,px=x=>(0.04+x*0.92)*W,py=y=>(1-y)*H;
+  cx.strokeStyle='#1e3550';cx.lineWidth=1*d;
+  for(let i=1;i<10;i++){cx.beginPath();cx.moveTo(W*i/10,0);cx.lineTo(W*i/10,H);cx.stroke();cx.beginPath();cx.moveTo(0,H*i/10);cx.lineTo(W,H*i/10);cx.stroke()}
+  for(const p of pts){p.t=Math.min(1,p.t+0.04);cx.globalAlpha=0.75*p.t;cx.fillStyle='#4fd1c5';cx.beginPath();cx.arc(px(p.x),py(p.y),(3+5*(1-p.t)+2)*d,0,7);cx.fill()}
+  cx.globalAlpha=1;const f=fit();
+  cx.strokeStyle='#ff7a59';cx.lineWidth=4*d;cx.beginPath();cx.moveTo(px(0),py(f.a));cx.lineTo(px(1),py(f.a+f.b));cx.stroke();
+  document.getElementById('clock').textContent=`n = ${f.n} · ŷ = ${f.a.toFixed(2)} ${f.b<0?'−':'+'} ${Math.abs(f.b).toFixed(2)}x · r² = ${f.r2.toFixed(2)}`;
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+/* ---------- puzzles ---------- */
+const puzzles=[
+  ["How many people need to be in a room for a 50% chance that two share a birthday?","23 people"],
+  ["Monty Hall: you pick door 1, the host opens a goat door. Should you switch?","Yes! Switching wins 2/3 of the time"],
+  ["What are the odds of flipping 10 heads in a row with a fair coin?","1 in 1,024"],
+  ["For household income, which is usually higher: the mean or the median?","The mean (a few huge incomes pull it up)"],
+  ["A test is 99% accurate for a disease 1 in 10,000 people have. You test positive. Chance you have it?","About 1% (base rates matter!)"],
+  ["Ice cream sales and shark attacks rise together. Does ice cream cause shark attacks?","No. Summer causes both. Correlation ≠ causation"],
+  ["Roll two dice. What total comes up most often?","7 (six ways to make it)"],
+];
+let pi=Math.floor(Math.random()*puzzles.length),quizTimer;
+function runQuiz(dur){
+  const [q,a]=puzzles[pi%puzzles.length];pi++;
+  document.getElementById('q').textContent=q;
+  const ael=document.getElementById('a'),bar=document.getElementById('qt');
+  ael.textContent='';bar.style.transition='none';bar.style.width='0';
+  const think=(dur-5)*1000;
+  requestAnimationFrame(()=>{bar.style.transition=`width ${think}ms linear`;bar.style.width='100%'});
+  clearTimeout(quizTimer);quizTimer=setTimeout(()=>{ael.textContent='→ '+a},think);
+}
+
+/* ---------- counter ---------- */
+function countUp(){const el=document.getElementById('rows');const end=706000,t0=performance.now(),D=reduce?1:2200;
+  (function step(t){const k=Math.min(1,(t-t0)/D),e=1-Math.pow(1-k,3);el.firstChild.nodeValue=Math.round(end*e).toLocaleString();if(k<1)requestAnimationFrame(step)})(t0);}
+
+/* ---------- editable join info ---------- */
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+['f-when','f-where','f-who'].forEach(id=>{const el=document.getElementById(id);const v=store.get('v2-'+id);if(v)el.textContent=v;
+  el.addEventListener('input',()=>store.set('v2-'+id,el.textContent));
+  el.addEventListener('focus',()=>{paused=true});el.addEventListener('blur',()=>{paused=false;go(cur,true)});
+  el.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();el.blur()}});});
+
+/* ---------- rotation ---------- */
+const scenes=[...document.querySelectorAll('.scene')],ticks=document.getElementById('ticks');
+scenes.forEach((s,i)=>{const b=document.createElement('button');b.setAttribute('aria-label','Slide '+(i+1));b.innerHTML='<i></i>';b.onclick=()=>go(i);ticks.appendChild(b)});
+let cur=0,paused=false,elapsed=0,last=performance.now();
+function go(i,keepTime){
+  scenes[cur].classList.remove('on');
+  cur=(i+scenes.length)%scenes.length;scenes[cur].classList.add('on');
+  if(!keepTime)elapsed=0;
+  [...ticks.children].forEach((b,j)=>b.firstChild.style.width=j<cur?'100%':'0');
+  if(!keepTime){if(scenes[cur].classList.contains('quiz'))runQuiz(+scenes[cur].dataset.dur);if(scenes[cur].querySelector('#rows'))countUp();}
+}
+function tick(t){const dt=(t-last)/1000;last=t;
+  if(!paused){elapsed+=dt;const dur=+scenes[cur].dataset.dur;ticks.children[cur].firstChild.style.width=Math.min(100,elapsed/dur*100)+'%';if(elapsed>=dur)go(cur+1)}
+  requestAnimationFrame(tick)}
+requestAnimationFrame(tick);
+
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight')go(cur+1);
+  else if(e.key==='ArrowLeft')go(cur-1);
+  else if(e.key===' '){e.preventDefault();paused=!paused}
+  else if(e.key==='f'||e.key==='F'){(document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()).catch(()=>{})}
+});
+let mt;addEventListener('mousemove',()=>{document.body.classList.add('mouse');clearTimeout(mt);mt=setTimeout(()=>document.body.classList.remove('mouse'),2500)});
+</script>
+</body>
+</html>
